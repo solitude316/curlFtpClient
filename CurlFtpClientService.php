@@ -52,26 +52,26 @@ class CurlFtpClientService
     */
     private $waiting_seconds = 90;
 
-	/**
-	* 儲存設定值
-	*/
+    /**
+    * 儲存設定值
+    */
     private $curl_settings = [];
 
 
-	/**
-	* 建構子
-	*/
+    /**
+    * 建構子
+    */
     public function __construct($ip = null, $protocol = null, $port = null, $skip_ssl = false)
     {
-		$this->setHost($ip)
-				->setProtocol($protocol, $port)
-				->skipSSL($skip_ssl);
+        $this->setHost($ip)
+                ->setProtocol($protocol, $port)
+                ->skipSSL($skip_ssl);
     }
 
-	/**
-	* 設定 IP
-	*/
-	public function setHost($ip)
+    /**
+    * 設定 IP
+    */
+    public function setHost($ip)
     {
         if (is_null($ip)) {
             throw new Exception ('請輸入IP');
@@ -80,42 +80,42 @@ class CurlFtpClientService
         return $this;
     }
 
-	/**
-	* 設定通訊協定以及 port
-	*/
-	public function setProtocol($protocol = '', $port = null)
+    /**
+    * 設定通訊協定以及 port
+    */
+    public function setProtocol($protocol = '', $port = null)
     {
         $protocol = strtolower($protocol);
         $protocol = (strlen($protocol) == 0) ? 'ftp' : $protocol;
 
-		if ($protocol == 'ftp' || $protocol == '') {
-			$this->protocol = $protocol;
+        if ($protocol == 'ftp' || $protocol == '') {
+            $this->protocol = $protocol;
             $this->port = is_null($port) ? 21 : $port;
-		} else if ($protocol == 'ftps') {
-			$this->protocol = $protocol;
+        } else if ($protocol == 'ftps') {
+            $this->protocol = $protocol;
             $this->port = is_null($port) ? 990 : $port;
-		} else {
-			throw new Exception('本 Client 只收 ftp 或 ftps。');
-		}
+        } else {
+            throw new Exception('本 Client 只收 ftp 或 ftps。');
+        }
 
         return $this;
     }
 
-	/**
+    /**
     * 設定是否略過 ssl 憑證
     */
-	public function skipSSL($is_skip)
-	{
-		if ($this->protocol == 'ftps') {
-			$this->skip_ssl = ($is_skip === true);
-		}
-		return $this;
-	}
+    public function skipSSL($is_skip)
+    {
+        if ($this->protocol == 'ftps') {
+            $this->skip_ssl = ($is_skip === true);
+        }
+        return $this;
+    }
 
 
-	/**
-	* 設定帳號密碼
-	*/
+    /**
+    * 設定帳號密碼
+    */
     public function setAccount($username, $password)
     {
         $this->username = $username;
@@ -143,30 +143,30 @@ class CurlFtpClientService
 
     public function getScheme()
     {
-/*
+        /*
         $data = [
-            'protocol'  => $this->protocol,
-            'username'  => $this->username,
-            'password'  => $this->password,
-            'port'      => $this->port,
-            'ip'        => $this->ip
+        'protocol'  => $this->protocol,
+        'username'  => $this->username,
+        'password'  => $this->password,
+        'port'      => $this->port,
+        'ip'        => $this->ip
         ];
 
         $rules = [
-            'protocol'  => 'required',
-            'username'  => 'required',
-            'password'  => 'required',
-            'port'      => 'required|integer',
-            'ip'        => 'required|ip'
+        'protocol'  => 'required',
+        'username'  => 'required',
+        'password'  => 'required',
+        'port'      => 'required|integer',
+        'ip'        => 'required|ip'
         ];
 
         $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            $messages = $validator->messages();
-            throw new Exception ($messages);
+        $messages = $validator->messages();
+        throw new Exception ($messages);
         }
-*/
+        */
         // $encoded_username = urlencode($this->username);
         // $encoded_password = urlencode($this->password);
         $scheme =  "{$this->protocol}://{$this->ip}:{$this->port}";
@@ -185,9 +185,9 @@ class CurlFtpClientService
     public function getFileList()
     {
         $setting = [
-                CURLOPT_FTPLISTONLY => true,
-                CURLOPT_CUSTOMREQUEST => 'LIST'
-            ];
+            CURLOPT_FTPLISTONLY => true,
+            CURLOPT_CUSTOMREQUEST => 'LIST'
+        ];
 
         $result = $this->initConnection($setting)->fire();
 
@@ -207,7 +207,8 @@ class CurlFtpClientService
 
         $index = 0;
         $pattern = '/([0-9]{2})-([0-9]{2})-([0-9]{2}) +([0-9]{2}:[0-9]{2}[AP]M) +(<DIR>)? + (\d+)? (.*)$/';
-        foreach($contents as $val) {
+
+        foreach ($contents as $val) {
             if (preg_match($pattern, $val, $matches)) {
                 $time_str = "{$matches[3]}-{$matches[1]}-{$matches[2]} {$matches[4]}";
                 $file_time = date('Y-m-d H:i:s', strtotime($time_str));
@@ -271,11 +272,11 @@ class CurlFtpClientService
         }
 
         // 如果檔案不存在，會寫成空檔，遇到空檔案時，就砍了吧。
-         if (filesize($full_path) == 0) {
+        if (filesize($full_path) == 0) {
             unlink($full_path);
-         }
+        }
 
-         return true;
+        return true;
     }
 
     public function upload($local_path, $remote_filename)
@@ -288,12 +289,13 @@ class CurlFtpClientService
         $setting[CURLOPT_INFILESIZE] = filesize($local_path);
 
         $result = $this->initConnection($setting)->fire();
+
         if ($result['error_no'] !== 0) {
             $error_constants = $this->transalteErrorNo($result['error_no']);
             throw new Exception("檔案上傳失敗 ({$error_constants})", $result['error_no']);
         }
 
-        return true;
+    return true;
     }
 
     public function delete($remote_filename)
@@ -302,6 +304,7 @@ class CurlFtpClientService
         $setting[CURLOPT_QUOTE] = array("DELE {$this->remote_path}");
 
         $result = $this->initConnection($setting)->fire();
+
         if ($result['error_no'] !== 78) {
             $error_constants = $this->transalteErrorNo($result['error_no']);
             throw new Exception("檔案刪除失敗 ({$error_constants})", $result['error_no']);
@@ -353,7 +356,8 @@ class CurlFtpClientService
         return $result;
     }
 
-    private function transalteErrorNo($error_no){
+    private function transalteErrorNo($error_no)
+    {
         // 直接用數字，而不用常數，是因為以前有採過不同PHP版本有不同常數定義的雷...
         $error_table = [
             1 => 'CURLE_UNSUPPORTED_PROTOCOL',
