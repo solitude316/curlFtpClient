@@ -17,7 +17,18 @@
         <mkdir dir="${basedir}/build/logs"/>
         <property name="prepare.done" value="true"/>
     </target>
+    
+    <!--從這邊開始，都是針對PHP程式碼做分析-->
+    <target name="lint" depends="prepare">
+        <apply executable="php" failonerror="true" taskname="lint">
+            <arg value="-l"/>
 
+            <fileset dir="${basedir}/">
+                <include name="**/*.php"/>
+                <modified/>
+            </fileset>
+        </apply>
+    </target>
     <!--從這邊開始都是佈署所需要的設定檔-->
     <!--設定相關屬性-->
     <property name="apptarfile" value="phptheday23.tar.gz" />
